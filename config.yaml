@@ -1,0 +1,116 @@
+# Bilayers spec of this workflow; the Slurm client (BIOMERO) reads it from the repository at a release tag.
+# Drafted with `bilayers-auto from-biaflows` from the BIAFLOWS descriptor.json of
+# W_Measurements-CellProfiler v1.1.1, whose wrapper runs unchanged in /app/biaflows.
+citations:
+  - name: "Measurements-CellProfiler"
+    doi: ""
+    license: "Apache-2.0"
+    description: "Extracts morphology, texture and intensity measurements from 2D fluorescence images with a headless CellProfiler 4.2.6 pipeline, given pre-segmented nuclei, cell and aggregate/foci label masks per image (W_Measurements-CellProfiler v1.1.1, Cellular Imaging Amsterdam UMC)"
+  - name: "CellProfiler 4"
+    doi: "https://doi.org/10.1186/s12859-021-04344-9"
+    license: "BSD-3-Clause"
+    description: "Stirling et al. (2021) CellProfiler 4: improvements in speed, utility and usability. BMC Bioinformatics 22, 433"
+
+docker_image:
+  org: cellularimagingcf
+  name: bilayers_measurements-cellprofiler
+  tag: "v1.0.0"
+  platform: "linux/amd64"
+
+algorithm_folder_name: "Measurements-CellProfiler"
+
+exec_function:
+  name: "generate_cli_command"
+  # the BIAFLOWS wrapper, with CellProfiler's Python; wrapper.py (the entrypoint) calls it BIAFLOWS style
+  cli_command: "python /app/biaflows/wrapper.py"
+  hidden_args:
+
+inputs:
+  - name: infolder
+    type: image
+    label: "Images and masks"
+    description: "2D fluorescence images with, per image, a nuclei, a cell and an aggregates/foci label mask: same base name, ending with the mask suffixes below. OME-Zarr is converted to OME-TIFF for CellProfiler, keeping the names."
+    cli_tag: "--infolder"
+    cli_order: 1
+    default: "directory"
+    optional: False
+    # CellProfiler reads the TIFF (wrapper.py: tool_formats=["tiff"])
+    format:
+      - ometiff
+      - omezarr
+    unique_string:
+      - "*"
+    folder_name: "/data/in"
+    file_count: multiple
+    section_id: "inputs"
+    mode: "beginner"
+    subtype:
+      - color
+      - grayscale
+      - label
+    depth: False
+    timepoints: False
+    tiled: False
+    pyramidal: False
+
+outputs:
+  - name: outfolder
+    type: measurement
+    label: "Measurement tables"
+    description: "Per-object CSV tables (Nuclei, Cells, Cytoplasm, Aggregates) with shape, size, texture and per-channel intensity features, Image and Experiment tables, and the pipeline used; each CSV starts with an OMERO.tables column-type row"
+    cli_tag: "--outfolder"
+    cli_order: 2
+    default: "directory"
+    optional: False
+    format:
+      - csv
+    unique_string:
+      - ".csv"
+    folder_name: "/data/out"
+    file_count: multiple
+    section_id: "outputs"
+    mode: "beginner"
+
+parameters:
+  - name: nuclei_mask_suffix
+    type: textbox
+    label: "Suffix for Nuclei Mask"
+    description: "Filename suffix that identifies the nuclei (greyscale label) mask images"
+    default: "_Nuclei_Mask"
+    cli_tag: "--nuclei_mask_suffix"
+    cli_order: 10
+    optional: True
+    section_id: "masks"
+    mode: "beginner"
+  - name: cells_mask_suffix
+    type: textbox
+    label: "Suffix for Cells Mask"
+    description: "Filename suffix that identifies the cell (greyscale label) mask images"
+    default: "_Cells_Mask"
+    cli_tag: "--cells_mask_suffix"
+    cli_order: 11
+    optional: True
+    section_id: "masks"
+    mode: "beginner"
+  - name: aggregates_mask_suffix
+    type: textbox
+    label: "Suffix for Aggregates Mask"
+    description: "Filename suffix that identifies the aggregates/foci (greyscale label) mask images"
+    default: "_Aggregates_Mask"
+    cli_tag: "--aggregates_mask_suffix"
+    cli_order: 12
+    optional: True
+    section_id: "masks"
+    mode: "beginner"
+  - name: metric_channels
+    type: textbox
+    label: "Channels to measure"
+    description: "Comma-separated, 1-based channels of the original image used for intensity measurements, e.g. 1,2,3 for RGB, 1 for a single channel"
+    default: "1,2,3"
+    cli_tag: "--metric_channels"
+    cli_order: 13
+    optional: True
+    section_id: "measurements"
+    mode: "beginner"
+
+display_only:

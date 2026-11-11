@@ -1,0 +1,1 @@
+bilayers-auto-container[test] @ git+https://github.com/NL-BioImaging/bilayers-auto-container.git
