@@ -65,8 +65,9 @@ measurements_cellprofiler_repo=https://github.com/Cellular-Imaging-Amsterdam-UMC
 measurements_cellprofiler_image=cellularimagingcf/bilayers_measurements-cellprofiler
 ```
 
-The release tag must equal `docker_image.tag` in `config.yaml`; publishing the release builds and
-pushes the image (`.github/workflows/docker-image.yml`).
+Release a new version with the Release workflow (`gh workflow run release.yml -f version=vX.Y.Z`,
+see the `release-workflow` skill): it sets `docker_image.tag` in `config.yaml`, builds and pushes
+the image, and only then pushes the release tag, so the tag, `docker_image.tag` and the image agree.
 
 ## Running it with Docker
 

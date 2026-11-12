@@ -24,6 +24,7 @@ BIAFLOWS style.
 | `tests/` | `sample_data.py` (the sample job of the earlier conversion, on `bilayers_auto`), `data/in` (the sample as OME-TIFF), `data/expected*` (reference runs, below), `test_workflow.py`: config validation, the Slurm client's arguments and the tool command, parameter ids, input formats, Dockerfile checks, no descriptor in the repository, and a `container` test. `pytest.ini`, `requirements-dev.txt`. |
 | `.github/workflows/` | `ci.yml` (validate + `pytest`, including the container test; pip cache on `requirements-dev.txt`) and the template's `docker-image.yml` (image tag from `config.yaml`, on release). |
 | `README.md`, `LICENSE`, `.gitattributes`, `.gitignore`, `.dockerignore` | README with the generated-with notice, inputs, outputs, parameters, BIOMERO registration, Docker use, credits. The source's Apache-2.0 license. LF line endings. |
+| `.github/workflows/release.yml`, `.claude/skills/` (from the template's `workflow-files/`) | Replace `docker-image.yml`: the Release workflow (run by hand with a version) sets `docker_image.tag`, validates and tests, builds the image (pushes it when `PUBLISH` is `"true"`), and only then pushes the commit, tag and GitHub release. Skills `update-workflow` and `release-workflow` for working on this repository; `.claude` kept out of the image. |
 
 The template itself needed one fix, not yet pushed: `bilayers_auto.compare.compare_tables` treated
 NaN cells as different from NaN (CellProfiler writes `nan` for measurements of objects without
