@@ -61,7 +61,7 @@ Register it in BIOMERO's `slurm-config.ini`:
 ```ini
 [WORKFLOWS]
 measurements_cellprofiler=measurements_cellprofiler
-measurements_cellprofiler_repo=https://github.com/Cellular-Imaging-Amsterdam-UMC/bilayers_Measurements-CellProfiler/tree/v1.0.0
+measurements_cellprofiler_repo=https://github.com/Cellular-Imaging-Amsterdam-UMC/bilayers_Measurements-CellProfiler/tree/v1.0.1
 measurements_cellprofiler_image=cellularimagingcf/bilayers_measurements-cellprofiler
 ```
 
@@ -75,8 +75,8 @@ Lay out a job folder like the Slurm client's (`<job>/data/in` with the images an
 `<job>/data/out`) and mount `data`:
 
 ```
-docker build -t cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.0 .
-docker run --rm -v ./job/data:/data cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.0 \
+docker build -t cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 .
+docker run --rm -v ./job/data:/data cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 \
     --infolder=/data/in --outfolder=/data/out --metric_channels=1,2,3
 ```
 
