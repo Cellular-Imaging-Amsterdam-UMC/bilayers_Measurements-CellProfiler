@@ -14,7 +14,7 @@ citations:
 docker_image:
   org: cellularimagingcf
   name: bilayers_measurements-cellprofiler
-  tag: "v1.0.1"
+  tag: "v1.0.2"
   platform: "linux/amd64"
 
 algorithm_folder_name: "Measurements-CellProfiler"
