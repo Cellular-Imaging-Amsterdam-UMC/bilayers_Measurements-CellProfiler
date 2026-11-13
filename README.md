@@ -61,7 +61,7 @@ Register it in BIOMERO's `slurm-config.ini`:
 ```ini
 [WORKFLOWS]
 measurements_cellprofiler=measurements_cellprofiler
-measurements_cellprofiler_repo=https://github.com/Cellular-Imaging-Amsterdam-UMC/bilayers_Measurements-CellProfiler/tree/v1.0.1
+measurements_cellprofiler_repo=https://github.com/Cellular-Imaging-Amsterdam-UMC/bilayers_Measurements-CellProfiler/tree/v1.0.2
 measurements_cellprofiler_image=cellularimagingcf/bilayers_measurements-cellprofiler
 ```
 
@@ -73,9 +73,9 @@ the image, and only then pushes the release tag, so the tag, `docker_image.tag` 
 
 No BIOMERO or Slurm needed: run the image on a folder of images and masks.
 
-**Get the image**: `docker pull cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1`
+**Get the image**: `docker pull cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.2`
 (published on Docker Hub), or build it from this repository:
-`docker build -t cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 .`
+`docker build -t cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.2 .`
 
 **With the script** (Linux, macOS, or Git Bash on Windows):
 
@@ -91,9 +91,9 @@ No BIOMERO or Slurm needed: run the image on a folder of images and masks.
 **Without the script**, the commands it runs:
 
 ```
-docker run --rm -v <in>:/data/in -v <out>:/data/out cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 \
+docker run --rm -v <in>:/data/in -v <out>:/data/out cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.2 \
     --infolder=/data/in --outfolder=/data/out --metric_channels=1,2
-apptainer run --bind <in>:/data/in,<out>:/data/out docker://cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 \
+apptainer run --bind <in>:/data/in,<out>:/data/out docker://cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.2 \
     --infolder=/data/in --outfolder=/data/out --metric_channels=1,2
 ```
 
