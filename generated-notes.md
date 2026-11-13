@@ -26,7 +26,27 @@ BIAFLOWS style.
 | `README.md`, `LICENSE`, `.gitattributes`, `.gitignore`, `.dockerignore` | README with the generated-with notice, inputs, outputs, parameters, BIOMERO registration, Docker use, credits. The source's Apache-2.0 license. LF line endings. |
 | `.github/workflows/release.yml`, `.claude/skills/` (from the template's `workflow-files/`) | Replace `docker-image.yml`: the Release workflow (run by hand with a version) sets `docker_image.tag`, validates and tests, builds the image (pushes it when `PUBLISH` is `"true"`), and only then pushes the commit, tag and GitHub release. Skills `update-workflow` and `release-workflow` for working on this repository; `.claude` kept out of the image. |
 
-The template itself needed one fix, not yet pushed: `bilayers_auto.compare.compare_tables` treated
+### Regeneration with the current skill (2026-11-13)
+
+Brought up to date with the `create-bilayers-container` skill of bilayers-auto-container `384d2a2`,
+with AI assistance (Claude Code). The source, `config.yaml`, `wrapper.py`, `Dockerfile`, tests
+and test data were already what the current skill produces and are unchanged.
+
+| Change | What it does |
+|---|---|
+| `run.sh` (new, executable), `.gitattributes` (`*.sh text eol=lf`) | From the skill's `references/run.sh`, flags `--infolder`/`--outfolder`: runs the image on a folder with Docker, Podman or Apptainer/Singularity, without BIOMERO or Slurm. |
+| `README.md` | "Run it yourself" (get the image, `run.sh`, plain `docker`/`apptainer` commands, parameter table, `params.yaml`, inputs/outputs, settings) replaces "Running it with Docker"; the new files in the development table. |
+| `.claude/skills/workflow-outputs/SKILL.md` (new) | From the skill's `references/outputs-skill.md`: every output table and its columns, units (pixels; intensities scaled 0–1), the pipeline's steps, caveats (images and masks paired by order), the output tree, how tables join (`ImageNumber`, `ObjectNumber` = mask label, `Parent_*`), and a tested pandas loader. |
+| `notebooks/read-outputs.ipynb` (new) | From the skill's `references/read-outputs.ipynb`, with the loader and an example analysis (cells with aggregates per image; aggregates vs. cell area; nucleus vs. cytoplasm intensity). Committed without outputs. |
+| `.github/workflows/release.yml`, `.claude/skills/update-workflow/SKILL.md` | The template's current `workflow-files/` (Node 24 action versions; `run.sh`, outputs skill and notebook in the update procedure); `PUBLISH` stays `"true"`. |
+| `.github/workflows/ci.yml` | `actions/checkout@v7`, `actions/setup-python@v7`, as the template. |
+| `.dockerignore` | Also keeps `notebooks` out of the image. |
+
+The template got one more fix, uncommitted in bilayers-auto-container: the notebook's generic
+`read_table` skips the OMERO.tables `# header ...` type row, which it otherwise read as the column
+names.
+
+The earlier template fix, now pushed (bilayers-auto-container `cfec6a3`): `bilayers_auto.compare.compare_tables` treated
 NaN cells as different from NaN (CellProfiler writes `nan` for measurements of objects without
 children). The fix and a test are uncommitted in bilayers-auto-container.
 
@@ -75,10 +95,17 @@ TCZYX with singleton axes, which changes the digest. All measurements still matc
   `file:///data/in/`), no copy of the input, not zipped.
 - A run as a non-root user (uid 12345) with a read-only root filesystem, `/tmp` as tmpfs and
   `HOME=/nonexistent`, as under Singularity: completed with all outputs.
+- Regeneration (2026-11-13; Docker 29.9.3, template `384d2a2` from GitHub): `validate --slurm`
+  no issues; `command` gives the BIAFLOWS call; `pytest` 9 passed, including the three container
+  runs against the reference runs (image rebuilt). `./run.sh tests/data/in <out>`: the same 7 files,
+  all matching `tests/data/expected`; `./run.sh ... --params params.yaml` (`metric_channels: "1,2"`)
+  gives the two channels. The outputs skill's loader and the notebook (all cells, nbconvert)
+  ran on that output folder; `ObjectNumber` = mask label and X/Y = column/row checked against
+  `regionprops` on the test masks.
 
 ### Still to verify
 
-- CI on GitHub: its container test compares with the template from GitHub, so it needs the
-  template's NaN fix pushed first.
+- CI on GitHub after this push (the template's NaN fix is now on GitHub).
+- `run.sh` with Podman and Apptainer/Singularity (only Docker run).
 - A run on real images and masks (only the synthetic sample so far).
 - A run through BIOMERO on Slurm (Singularity) after release `v1.0.0` and registration.

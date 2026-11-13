@@ -69,16 +69,66 @@ Release a new version with the Release workflow (`gh workflow run release.yml -f
 see the `release-workflow` skill): it sets `docker_image.tag` in `config.yaml`, builds and pushes
 the image, and only then pushes the release tag, so the tag, `docker_image.tag` and the image agree.
 
-## Running it with Docker
+## Run it yourself
 
-Lay out a job folder like the Slurm client's (`<job>/data/in` with the images and masks, an empty
-`<job>/data/out`) and mount `data`:
+No BIOMERO or Slurm needed: run the image on a folder of images and masks.
+
+**Get the image**: `docker pull cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1`
+(published on Docker Hub), or build it from this repository:
+`docker build -t cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 .`
+
+**With the script** (Linux, macOS, or Git Bash on Windows):
 
 ```
-docker build -t cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 .
-docker run --rm -v ./job/data:/data cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 \
-    --infolder=/data/in --outfolder=/data/out --metric_channels=1,2,3
+./run.sh <input folder> <output folder> [--<param>=<value> ...]
+./run.sh images/ results/ --metric_channels=1,2
 ```
+
+`run.sh` takes the image from `docker_image` in `config.yaml`. Set `RUNTIME=podman`,
+`RUNTIME=apptainer` or `RUNTIME=singularity` for another engine, and `IMAGE=...` for another image
+(or a `.sif` file with Apptainer/Singularity). `./run.sh --help` lists the options.
+
+**Without the script**, the commands it runs:
+
+```
+docker run --rm -v <in>:/data/in -v <out>:/data/out cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 \
+    --infolder=/data/in --outfolder=/data/out --metric_channels=1,2
+apptainer run --bind <in>:/data/in,<out>:/data/out docker://cellularimagingcf/bilayers_measurements-cellprofiler:v1.0.1 \
+    --infolder=/data/in --outfolder=/data/out --metric_channels=1,2
+```
+
+Podman takes the same arguments as Docker (add `:Z` to the volumes on SELinux hosts).
+
+**Parameters** (left-out parameters take their defaults):
+
+| Flag | Type | Default | Meaning |
+|---|---|---|---|
+| `--nuclei_mask_suffix` | text | `_Nuclei_Mask` | file name suffix of the nuclei masks |
+| `--cells_mask_suffix` | text | `_Cells_Mask` | file name suffix of the cell masks |
+| `--aggregates_mask_suffix` | text | `_Aggregates_Mask` | file name suffix of the aggregates/foci masks |
+| `--metric_channels` | text | `1,2,3` | comma-separated, 1-based channels of the image to measure intensities in |
+
+Or all in a file, `./run.sh images/ results/ --params params.yaml`, with e.g.:
+
+```yaml
+metric_channels: "1,2"
+nuclei_mask_suffix: _nuclei
+```
+
+**Inputs and outputs**: the input folder holds, per image, the image and its three label masks
+(see *What you need*), as OME-TIFF/TIFF or OME-Zarr. The output folder gets the tables and the
+pipeline copy (see *Outputs*) plus the RO-Crate: `ro-crate-metadata.json`, `config.yaml`,
+`parameters.yaml` and `ro-crate-preview.html`. The input is referenced in the RO-Crate, not copied.
+`notebooks/read-outputs.ipynb` reads an output folder (provenance, every table, and the tables
+joined per cell and per aggregate); the `workflow-outputs` skill describes every column.
+
+**Settings**: environment overrides, set for `run.sh` (e.g. `ZIP_OUTPUT=true ./run.sh ...`) or
+passed with `-e NAME=value` (Docker/Podman) or `--env NAME=value` (Apptainer):
+`ZIP_OUTPUT=true` (the output as one uncompressed `Measurements-CellProfiler.zip`),
+`RO_CRATE=false` (no RO-Crate), `RO_CRATE_INPUT=copy` (copy the input into the crate),
+`CONVERT_INPUTS`, `TOOL_FORMATS`, `OMEZARR_VERSION` (see
+[the container contract](https://github.com/NL-BioImaging/bilayers-auto-container)).
+`OUTPUT_FORMAT` has no effect: the workflow writes no images.
 
 ## Development
 
@@ -89,6 +139,9 @@ docker run --rm -v ./job/data:/data cellularimagingcf/bilayers_measurements-cell
 | `biaflows/` | the original `wrapper.py` and `FullMeasurementsNucleiCellAggregates.cppipe` of W_Measurements-CellProfiler v1.1.1, unchanged |
 | `Dockerfile` | CellProfiler 4.2.6 with the BIAFLOWS utilities (tool layer) and `bilayers_auto` in its own Python 3.12 environment |
 | `tests/` | config, Slurm-argument and Dockerfile checks; a container test against reference runs of the original image |
+| `run.sh` | runs the image on a folder of images with Docker, Podman or Apptainer/Singularity |
+| `notebooks/read-outputs.ipynb` | reads a run's output folder for analysis |
+| `.claude/skills/` | `update-workflow` (change and verify), `release-workflow` (release a version), `workflow-outputs` (what the outputs hold, how to load them) |
 
 ```
 pip install -r requirements-dev.txt

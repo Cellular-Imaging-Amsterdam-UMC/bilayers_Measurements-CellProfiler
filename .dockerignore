@@ -3,6 +3,7 @@
 .idea
 .venv
 .pytest_cache
+notebooks
 tests
 **/__pycache__
 .claude
